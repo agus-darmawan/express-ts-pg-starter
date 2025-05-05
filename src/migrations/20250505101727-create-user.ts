@@ -1,6 +1,6 @@
 // migrations/20230506000000-create-user.ts
 import { QueryInterface, DataTypes } from "sequelize";
-import { Role } from "../enum/role.enum";
+import { Role } from "../enums/role.enum";
 
 module.exports = {
   up: async (queryInterface: QueryInterface) => {
