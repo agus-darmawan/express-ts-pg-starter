@@ -2,12 +2,13 @@
   "name": "express-starter",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node bin/www.ts",
+    "build": "tsc",
     "dev": "nodemon --watch 'src/**/*.ts' --exec ts-node bin/www.ts",
-    "build": "tsc"
+    "start": "ts-node bin/www.ts",
+    "sequelize": "sequelize-cli",
+    "migrate": "sequelize-cli db:migrate --env development",
+    "seed": "sequelize-cli db:seed:all --env development"
   },
   "keywords": [],
   "author": "",
@@ -15,9 +16,11 @@
   "packageManager": "pnpm@10.6.2",
   "devDependencies": {
     "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/pg": "^8.11.14",
     "@types/sequelize": "^4.28.20",
     "nodemon": "^3.1.10",
+    "sequelize-cli": "^6.6.2",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
     "typescript": "^5.8.3"
@@ -25,6 +28,7 @@
   "dependencies": {
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "pg": "^8.15.6",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",

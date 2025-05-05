@@ -1,6 +1,7 @@
 import express, { Application } from "express";
 import { notFoundHandler } from "./middlewares/error.middleware";
 import promClient from "prom-client";
+import { Response, Request, NextFunction } from "express";
 
 const app: Application = express();
 
@@ -15,7 +16,7 @@ const requestDuration = new promClient.Histogram({
 
 app.use(express.json());
 
-app.use((_req, res, next) => {
+app.use((_req: Request, res: Response, next: NextFunction) => {
   const end = requestDuration.startTimer();
   res.on("finish", () => {
     end({ statusCode: res.statusCode });
@@ -23,7 +24,7 @@ app.use((_req, res, next) => {
   next();
 });
 
-app.get("/metrics", (_req, res) => {
+app.get("/metrics", (_req: Request, res: Response) => {
   res.set("Content-Type", promClient.register.contentType);
   res.end(promClient.register.metrics());
 });
