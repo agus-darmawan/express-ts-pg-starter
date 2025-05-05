@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "express_app"
+    static_configs:
+      - targets: ["app:3001"]
+    metrics_path: "/metrics"
+
+  - job_name: "postgres_db"
+    static_configs:
+      - targets: ["db:5432"]
+    metrics_path: "/metrics"
+
+  - job_name: "grafana"
+    static_configs:
+      - targets: ["grafana:5050"]
+    metrics_path: "/metrics"
+
+  - job_name: "adminer"
+    static_configs:
+      - targets: ["adminer:8080"]
+    metrics_path: "/metrics"

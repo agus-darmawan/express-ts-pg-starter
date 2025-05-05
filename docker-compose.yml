@@ -1,0 +1,70 @@
+services:
+  db:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./etc/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - backend
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+    ports:
+      - "5050:3000"
+    networks:
+      - backend
+    depends_on:
+      - prometheus
+
+  # Your Express app service
+  app:
+    build: .
+    container_name: express_app
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - PORT=3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
+    driver: bridge
