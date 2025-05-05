@@ -6,6 +6,8 @@ import logger from "../src/config/logger";
 import { syncDatabase } from "../src/config/database";
 
 logger.info("Starting server...");
+
+// Normalize and set the port
 const port = normalizePort(process.env.PORT || "3001");
 app.set("port", port);
 
@@ -13,7 +15,12 @@ const server = http.createServer(app);
 
 server.listen(port);
 server.on("error", onError);
-server.on("listening", onListening);
+server.on("listening", () => {
+  const addr = server.address();
+  const bind =
+    typeof addr === "string" ? "pipe " + addr : addr ? "port " + addr.port : "";
+  logger.info("Listening on " + bind);
+});
 
 syncDatabase();
 
@@ -41,10 +48,4 @@ function onError(error: NodeJS.ErrnoException): void {
     default:
       throw error;
   }
-}
-
-function onListening(): void {
-  const addr = server.address();
-  const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr?.port;
-  logger.debug("Listening on " + bind);
 }

@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User";
-import { RefreshToken } from "../models/RefreshToken";
+import RefreshToken from "../models/RefreshToken";
 import { Role } from "../enums/role.enum";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 import {
@@ -40,7 +40,7 @@ export const registerUser = async (userData: {
   expiresAt.setDate(expiresAt.getDate() + 7);
 
   await RefreshToken.create({
-    userId: user.id,
+    userId: user.dataValues.id,
     token: await bcrypt.hash(refreshToken, 10),
     expiresAt,
   });
@@ -49,32 +49,42 @@ export const registerUser = async (userData: {
     accessToken,
     refreshToken,
     user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
+      id: user.dataValues.id,
+      name: user.dataValues.name,
+      email: user.dataValues.email,
+      role: user.dataValues.role,
     },
   };
 };
 
 export const loginUser = async (email: string, password: string) => {
   const user = await User.findOne({ where: { email } });
+
   if (!user) {
     throw new AuthenticationError("Invalid email or password");
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password);
+  const isPasswordValid = await bcrypt.compare(
+    password,
+    user.dataValues.password
+  );
   if (!isPasswordValid) {
     throw new AuthenticationError("Invalid email or password");
   }
 
-  const accessToken = generateAccessToken({ id: user.id, email: user.email });
-  const refreshToken = generateRefreshToken({ id: user.id, email: user.email });
+  const accessToken = generateAccessToken({
+    id: user.dataValues.id,
+    email: user.dataValues.email,
+  });
+  const refreshToken = generateRefreshToken({
+    id: user.dataValues.id,
+    email: user.dataValues.email,
+  });
 
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 7);
   await RefreshToken.create({
-    userId: user.id,
+    userId: user.dataValues.id,
     token: await bcrypt.hash(refreshToken, 10),
     expiresAt,
   });
@@ -83,10 +93,10 @@ export const loginUser = async (email: string, password: string) => {
     accessToken,
     refreshToken,
     user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
+      id: user.dataValues.id,
+      name: user.dataValues.name,
+      email: user.dataValues.email,
+      role: user.dataValues.role,
     },
   };
 };

@@ -1,49 +1,41 @@
-import { DataTypes, Model, Optional } from "sequelize";
+import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database";
 
-interface RefreshTokenAttributes {
-  id: number;
-  userId: number;
-  token: string;
-  expiresAt: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-interface RefreshTokenCreationAttributes
-  extends Optional<RefreshTokenAttributes, "id" | "createdAt" | "updatedAt"> {}
-
-export class RefreshToken
-  extends Model<RefreshTokenAttributes, RefreshTokenCreationAttributes>
-  implements RefreshTokenAttributes
-{
+class RefreshToken extends Model {
   public id!: number;
   public userId!: number;
   public token!: string;
   public expiresAt!: Date;
-
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  public createdAt!: Date;
+  public updatedAt!: Date;
 }
 
 RefreshToken.init(
   {
     id: {
       type: DataTypes.INTEGER,
-      autoIncrement: true,
       primaryKey: true,
+      autoIncrement: true,
     },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
     token: {
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     expiresAt: {
       type: DataTypes.DATE,
       allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
