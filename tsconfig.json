@@ -19,7 +19,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "pretty": true,
-    "target": "es2017",
+    "target": "ESNext",
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true
