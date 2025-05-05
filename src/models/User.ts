@@ -1,6 +1,6 @@
-import { Model, DataTypes, Optional } from "sequelize";
-import sequelize from "../config/database"; // Adjust path as necessary
-import { Role } from "../enum/role.enum";
+import { DataTypes, Model, Optional } from "sequelize";
+import sequelize from "../config/database";
+import { Role } from "../enums/role.enum";
 
 interface UserAttributes {
   id: number;
@@ -9,13 +9,14 @@ interface UserAttributes {
   password: string;
   role: Role;
   active: boolean;
-  resetPasswordToken?: string;
-  resetPasswordExpires?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
+interface UserCreationAttributes
+  extends Optional<UserAttributes, "id" | "createdAt" | "updatedAt"> {}
 
-class User
+export class User
   extends Model<UserAttributes, UserCreationAttributes>
   implements UserAttributes
 {
@@ -25,8 +26,7 @@ class User
   public password!: string;
   public role!: Role;
   public active!: boolean;
-  public resetPasswordToken?: string;
-  public resetPasswordExpires?: Date;
+  public username!: string;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -34,44 +34,27 @@ class User
 
 User.init(
   {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    email: {
-      type: DataTypes.STRING,
-      unique: true,
-      allowNull: false,
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    name: { type: DataTypes.STRING, allowNull: false },
+    email: { type: DataTypes.STRING, allowNull: false, unique: true },
+    password: { type: DataTypes.STRING, allowNull: false },
     role: {
-      type: DataTypes.ENUM(...Object.values(Role)),
-      defaultValue: Role.GUEST,
-    },
-    active: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-    resetPasswordToken: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
+      validate: {
+        isIn: {
+          args: [[Role.ADMIN, Role.USER, Role.GUEST]],
+          msg: "Invalid role value",
+        },
+      },
     },
-    resetPasswordExpires: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
+    active: { type: DataTypes.BOOLEAN, defaultValue: true },
   },
   {
     sequelize,
     modelName: "User",
+    tableName: "users",
+    timestamps: true,
   }
 );
 

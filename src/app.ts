@@ -2,6 +2,7 @@ import express, { Application } from "express";
 import { notFoundHandler } from "./middlewares/error.middleware";
 import promClient from "prom-client";
 import { Response, Request, NextFunction } from "express";
+import v1Routes from "./routes/v1/index";
 
 const app: Application = express();
 
@@ -15,6 +16,7 @@ const requestDuration = new promClient.Histogram({
 });
 
 app.use(express.json());
+const router = express.Router();
 
 app.use((_req: Request, res: Response, next: NextFunction) => {
   const end = requestDuration.startTimer();
@@ -28,6 +30,7 @@ app.get("/metrics", (_req: Request, res: Response) => {
   res.set("Content-Type", promClient.register.contentType);
   res.end(promClient.register.metrics());
 });
+router.use("/v1", v1Routes);
 
 app.use(notFoundHandler);
 

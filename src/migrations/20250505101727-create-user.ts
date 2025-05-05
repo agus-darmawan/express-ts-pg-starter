@@ -4,7 +4,7 @@ import { Role } from "../enums/role.enum";
 
 module.exports = {
   up: async (queryInterface: QueryInterface) => {
-    await queryInterface.createTable("Users", {
+    await queryInterface.createTable("users", {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -51,6 +51,6 @@ module.exports = {
   },
 
   down: async (queryInterface: QueryInterface) => {
-    await queryInterface.dropTable("Users");
+    await queryInterface.dropTable("users");
   },
 };

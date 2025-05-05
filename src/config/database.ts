@@ -1,36 +1,36 @@
 import { Sequelize } from "sequelize";
 import { Client } from "pg";
 import dotenv from "dotenv";
-import config from "./config";
 import logger from "./logger";
-
 dotenv.config();
 
-const environment = (process.env.NODE_ENV ||
-  "development") as keyof typeof config;
-const dbConfig = config[environment];
-const { username, password, database, host, port } = dbConfig;
+const dbName = process.env.DB_NAME || "bookstore";
+const dbUser = process.env.DB_USER || "postgres";
+const dbPassword = process.env.DB_PASSWORD || "";
+const dbHost = process.env.DB_HOST || "localhost";
+const dbPort = process.env.DB_PORT || 5432;
 
+// ENSURE THE DB EXISTS
 const ensureDatabaseExists = async () => {
   const client = new Client({
-    user: username,
-    host: host,
+    user: dbUser,
+    host: dbHost,
     database: "postgres",
-    password: password,
-    port: port,
+    password: dbPassword,
+    port: Number(dbPort),
   });
 
   try {
     await client.connect();
     const res = await client.query(
-      `SELECT 1 FROM pg_database WHERE datname = '${database}'`
+      `SELECT 1 FROM pg_database WHERE datname = '${dbName}'`
     );
     if (res.rowCount === 0) {
-      logger.info(`Database ${database} does not exist. Creating...`);
-      await client.query(`CREATE DATABASE ${database}`);
-      logger.info(`Database ${database} created successfully.`);
+      logger.info(`Database ${dbName} does not exist. Creating...`);
+      await client.query(`CREATE DATABASE ${dbName}`);
+      logger.info(`Database ${dbName} created successfully.`);
     } else {
-      logger.info(`Database ${database} already exists.`);
+      logger.info(`Database ${dbName} already exists.`);
     }
   } catch (error) {
     logger.error("Error ensuring database exists:", error);
@@ -39,9 +39,9 @@ const ensureDatabaseExists = async () => {
   }
 };
 
-const sequelize = new Sequelize(database, username, password, {
-  host: host,
-  port: port,
+const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+  host: dbHost,
+  port: Number(dbPort),
   dialect: "postgres",
   logging: false,
 });

@@ -15,7 +15,7 @@ server.listen(port);
 server.on("error", onError);
 server.on("listening", onListening);
 
-syncDatabase(); // Sync the database when the server starts
+syncDatabase();
 
 function normalizePort(val: string): number | string | boolean {
   const port = parseInt(val, 10);
