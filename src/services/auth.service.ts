@@ -114,7 +114,7 @@ export const refreshAccessToken = async (refreshToken: string) => {
     }
 
     const storedToken = await RefreshToken.findOne({
-      where: { userId: user.id },
+      where: { userId: user.dataValues.id },
     });
     if (!storedToken) {
       throw new AuthenticationError("Refresh token not found");
@@ -130,8 +130,8 @@ export const refreshAccessToken = async (refreshToken: string) => {
     }
 
     const newAccessToken = generateAccessToken({
-      id: user.id,
-      email: user.email,
+      id: user.dataValues.id,
+      email: user.dataValues.email,
     });
     return { accessToken: newAccessToken };
   } catch (error) {

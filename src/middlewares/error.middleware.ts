@@ -8,30 +8,34 @@ export const notFoundHandler = (req: Request, res: Response) => {
   });
 };
 
-export class ValidationError extends Error {
-  constructor(message: string) {
+export class BaseError extends Error {
+  statusCode: number;
+  constructor(message: string, statusCode: number) {
     super(message);
-    this.name = "ValidationError";
+    this.statusCode = statusCode;
   }
 }
 
-export class AuthenticationError extends Error {
+export class ValidationError extends BaseError {
   constructor(message: string) {
-    super(message);
-    this.name = "AuthenticationError";
+    super(message, 400);
   }
 }
 
-export class NotFoundError extends Error {
+export class AuthenticationError extends BaseError {
   constructor(message: string) {
-    super(message);
-    this.name = "NotFoundError";
+    super(message, 401);
   }
 }
 
-export class ConflictError extends Error {
+export class NotFoundError extends BaseError {
   constructor(message: string) {
-    super(message);
-    this.name = "ConflictError";
+    super(message, 404);
+  }
+}
+
+export class ConflictError extends BaseError {
+  constructor(message: string) {
+    super(message, 409);
   }
 }

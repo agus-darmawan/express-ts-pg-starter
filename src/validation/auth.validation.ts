@@ -17,10 +17,6 @@ export const registerValidation = [
     .withMessage("Password must be at least 6 characters")
     .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/)
     .withMessage("Password must contain letters and numbers"),
-
-  body("role")
-    .isIn(["admin", "user", "guest"])
-    .withMessage("Invalid role, must be one of 'admin', 'user', or 'guest'"),
 ];
 
 export const loginValidation = [
