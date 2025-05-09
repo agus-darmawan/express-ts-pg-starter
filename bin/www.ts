@@ -4,11 +4,13 @@ import app from "../src/app";
 import http from "http";
 import logger from "../src/config/logger";
 import { syncDatabase } from "../src/config/database";
+import socketServer from "../src/config/ws";
 
 logger.info("Starting server...");
 
 // Normalize and set the port
 const port = normalizePort(process.env.PORT || "3001");
+const websocketPort = normalizePort(process.env.WEBSOCKET_PORT || "8081");
 app.set("port", port);
 
 const server = http.createServer(app);
@@ -20,6 +22,10 @@ server.on("listening", () => {
   const bind =
     typeof addr === "string" ? "pipe " + addr : addr ? "port " + addr.port : "";
   logger.info("Listening on " + bind);
+});
+
+socketServer.listen(websocketPort, () => {
+  logger.info(`Socket.IO server is running on ws://localhost:${websocketPort}`);
 });
 
 syncDatabase();

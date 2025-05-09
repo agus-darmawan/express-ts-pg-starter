@@ -2,10 +2,15 @@ import express, { Application, Request, Response, NextFunction } from "express";
 import { notFoundHandler } from "./middlewares/error.middleware";
 import promClient from "prom-client";
 import helmet from "helmet";
-import cors from "cors";
 import v1Routes from "./routes/index";
+import cors from "cors";
+import corsOptions from "./config/cors";
 
 const app: Application = express();
+
+app.use(cors(corsOptions));
+app.use(helmet());
+app.use(express.json());
 
 const collectDefaultMetrics = promClient.collectDefaultMetrics;
 collectDefaultMetrics();
@@ -16,8 +21,6 @@ const requestDuration = new promClient.Histogram({
   buckets: [0.1, 0.5, 1, 2, 5],
   labelNames: ["statusCode"],
 });
-
-app.use(express.json());
 
 app.use((_req: Request, res: Response, next: NextFunction) => {
   const end = requestDuration.startTimer();
@@ -33,18 +36,7 @@ app.get("/metrics", async (_req: Request, res: Response) => {
   res.end(metrics);
 });
 
-app.use(helmet());
-
-const corsOptions = {
-  origin: process.env.ALLOWED_ORIGINS?.split(",") || ["http://localhost:3000"],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
-app.use(cors(corsOptions));
-
 app.use("/api", v1Routes);
-
 app.use(notFoundHandler);
 
 export default app;
