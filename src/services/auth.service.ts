@@ -18,85 +18,95 @@ export const registerUser = async (userData: {
 }) => {
   const { name, email, password, role } = userData;
 
-  const existingUser = await User.findOne({ where: { email } });
+  const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new ConflictError("User with this email already exists");
   }
 
+  // Hash password before storing
   const hashedPassword = await bcrypt.hash(password, 10);
   const userRole = role || Role.GUEST;
-  const user = await User.create({
+
+  // Create the user
+  const user = new User({
     name,
     email,
     password: hashedPassword,
     role: userRole,
     active: true,
   });
+  await user.save();
 
-  const accessToken = generateAccessToken({ id: user.id, email: user.email });
-  const refreshToken = generateRefreshToken({ id: user.id, email: user.email });
+  // Generate tokens
+  const accessToken = generateAccessToken({ id: user._id, email: user.email });
+  const refreshToken = generateRefreshToken({
+    id: user._id,
+    email: user.email,
+  });
 
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 7);
 
-  await RefreshToken.create({
-    userId: user.dataValues.id,
-    token: await bcrypt.hash(refreshToken, 10),
+  const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+  const refreshTokenDoc = new RefreshToken({
+    userId: user._id,
+    token: hashedRefreshToken,
     expiresAt,
   });
+  await refreshTokenDoc.save();
 
   return {
     accessToken,
     refreshToken,
     user: {
-      id: user.dataValues.id,
-      name: user.dataValues.name,
-      email: user.dataValues.email,
-      role: user.dataValues.role,
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
     },
   };
 };
 
 export const loginUser = async (email: string, password: string) => {
-  const user = await User.findOne({ where: { email } });
+  const user = await User.findOne({ email });
 
   if (!user) {
     throw new AuthenticationError("Invalid email or password");
   }
 
-  const isPasswordValid = await bcrypt.compare(
-    password,
-    user.dataValues.password
-  );
+  const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     throw new AuthenticationError("Invalid email or password");
   }
 
   const accessToken = generateAccessToken({
-    id: user.dataValues.id,
-    email: user.dataValues.email,
+    id: user._id,
+    email: user.email,
   });
   const refreshToken = generateRefreshToken({
-    id: user.dataValues.id,
-    email: user.dataValues.email,
+    id: user._id,
+    email: user.email,
   });
 
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 7);
-  await RefreshToken.create({
-    userId: user.dataValues.id,
-    token: await bcrypt.hash(refreshToken, 10),
+
+  const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+  const refreshTokenDoc = new RefreshToken({
+    userId: user._id,
+    token: hashedRefreshToken,
     expiresAt,
   });
+  await refreshTokenDoc.save();
 
   return {
     accessToken,
     refreshToken,
     user: {
-      id: user.dataValues.id,
-      name: user.dataValues.name,
-      email: user.dataValues.email,
-      role: user.dataValues.role,
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
     },
   };
 };
@@ -108,13 +118,13 @@ export const refreshAccessToken = async (refreshToken: string) => {
       throw new AuthenticationError("Invalid refresh token");
     }
 
-    const user = await User.findByPk(decoded.id);
+    const user = await User.findById(decoded.id);
     if (!user) {
       throw new NotFoundError("User not found");
     }
 
     const storedToken = await RefreshToken.findOne({
-      where: { userId: user.dataValues.id },
+      userId: user._id,
     });
     if (!storedToken) {
       throw new AuthenticationError("Refresh token not found");
@@ -130,8 +140,8 @@ export const refreshAccessToken = async (refreshToken: string) => {
     }
 
     const newAccessToken = generateAccessToken({
-      id: user.dataValues.id,
-      email: user.dataValues.email,
+      id: user._id,
+      email: user.email,
     });
     return { accessToken: newAccessToken };
   } catch (error) {
@@ -139,12 +149,12 @@ export const refreshAccessToken = async (refreshToken: string) => {
   }
 };
 
-export const logoutUser = async (userId: number) => {
-  const user = await User.findByPk(userId);
+export const logoutUser = async (userId: string) => {
+  const user = await User.findById(userId);
   if (!user) {
     throw new NotFoundError("User not found");
   }
 
-  await RefreshToken.destroy({ where: { userId } });
+  await RefreshToken.deleteMany({ userId });
   return { message: "User logged out successfully" };
 };

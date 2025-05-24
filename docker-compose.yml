@@ -1,69 +1,22 @@
 services:
-  db:
-    image: postgres:13
-    container_name: postgres_db
+  # MongoDB service
+  mongo:
+    image: mongo:latest
+    container_name: dar-mongo
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME}
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - backend
-
-  adminer:
-    image: adminer
-    container_name: adminer
-    restart: always
-    ports:
-      - "8080:8080"
-    networks:
-      - backend
-
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    volumes:
-      - ./etc/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    networks:
-      - backend
-
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: "admin"
-    ports:
-      - "5050:3000"
-    networks:
-      - backend
-    depends_on:
-      - prometheus
-
-  # Your Express app service
-  app:
-    build: .
-    container_name: express_app
-    environment:
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-      - DB_HOST=db
-      - DB_PORT=5432
-      - PORT=3001
-    ports:
-      - "3001:3001"
-    depends_on:
-      - db
+      - mongo_data:/data/db
     networks:
       - backend
 
 volumes:
-  postgres_data:
+  mongo_data:
+    driver: local
 
 networks:
   backend:

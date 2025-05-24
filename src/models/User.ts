@@ -1,60 +1,34 @@
-import { Model, DataTypes } from "sequelize";
-import sequelize from "../config/database";
+import mongoose from "mongoose";
 
-class User extends Model {
-  public id!: number;
-  public name!: string;
-  public email!: string;
-  public password!: string;
-  public role!: string;
-  public active!: boolean;
-  public createdAt!: Date;
-  public updatedAt!: Date;
-}
-
-User.init(
+const userSchema = new mongoose.Schema(
   {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
     name: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
     },
     email: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
       unique: true,
     },
     password: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
     },
     role: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
     },
     active: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      type: Boolean,
+      default: true,
     },
   },
   {
-    sequelize,
-    modelName: "User",
-    tableName: "users",
     timestamps: true,
   }
 );
+
+const User = mongoose.model("User", userSchema);
 
 export default User;
